@@ -1,4 +1,4 @@
-### Задание
+# Задание
 
 Разработать бэкенд чата с поддержкой регистрации пользователей.
 
@@ -13,3 +13,67 @@
 
 Приложение запаковать в docker контейнер.
 
+# API
+
+#### Регистрация
+
+* Request: 
+```
+HTTP POST
+{"username" : "axeoman",
+"password" : "123j1kh21",
+"Full Name": "Atavin Alexey"}
+```
+* Response:  
+```
+{"code": 0, "note": Success"}
+```
+#### Авторизация
+* Request:  
+```
+HTTP POST
+{"username" : "axeoman",
+"password" : "123j1kh21",
+```
+* Response:  
+```
+{"code": 0, "note": Success", 
+"token": "asda12321321dq1221"}
+```
+#### Подключение
+
+* Request:  
+```
+{"token" : "asda12321321dq1221",
+ "action": "login"}
+```
+* Response: 
+```
+{"code": 0, "note": "Success"}
+ ```
+#### Список пользователей
+
+* Request:  
+```
+{"action": "get_user_list"}
+```
+* Response: 
+ ```
+{"users": []}
+```
+#### Отправка сообщения
+
+* Request:  
+```
+{"action": "broadcast",
+"message": "Привет Всем!"}  
+```
+```
+{"action": "unicast",
+"message": "Привет Андрей!"}
+```
+
+* Response:  
+```
+{"code": 0, "note": "Success"}
+```
