@@ -5,6 +5,7 @@ import hashlib
 import os
 from base64 import standard_b64encode
 
+
 class UserNotFoundError(Exception):
     pass
 
@@ -50,13 +51,13 @@ class RedisDB:
     async def auth(self, username: str, password: str) -> str:
         with await (await self.pool) as redis:
             hash, salt = await redis.hmget(username, "hash", "salt")
+            if not hash:
+                raise UserNotFoundError
             new_hash, _ = self.get_hash(password, salt)
             if not new_hash == hash:
                 raise PasswordError
-
             token = self._generate_token()
             await redis.hmset(username, "token", token)
-
         return token
 
     def _generate_token(self) -> str:
