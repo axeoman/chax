@@ -1,7 +1,8 @@
 import argparse
 import sys
 from aiohttp import web
-
+from .api import API
+from .db import RedisDB
 
 __version__ = "1.0.0"
 __author__ = "Atavin Alexey"
@@ -16,7 +17,11 @@ def main():
     args = parser.parse_args()
 
     app = web.Application()
-    
+    database = RedisDB(host='0.0.0.0')
+    api = API(db=database)
+
+    app.router.add_post("/register/", api.register)
+    app.router.add_port("/auth/", api.auth)
     web.run_app(app,
                 host=app['host'],
                 port=int(app['port']))

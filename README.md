@@ -23,7 +23,7 @@
 {
 "username" : "axeoman",
 "password" : "123j1kh21",
-"Full Name": "Atavin Alexey"
+"fullName": "Atavin Alexey"
 }
 ```
 * 200 OK
