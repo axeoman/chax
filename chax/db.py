@@ -2,7 +2,8 @@ import aioodbc
 import asyncio
 import aioredis
 import hashlib
-import os.urandom()
+import os
+from base64 import standard_b64encode
 
 class UserNotFoundError(Exception):
     pass
@@ -18,7 +19,7 @@ class UserExistsError(Exception):
 
 class RedisDB:
 
-    def __init__(self, host, port=6379):
+    def __init__(self, host="0.0.0.0", port=6379):
         self.host = host
         self.port = port
         self._pool = None
@@ -35,7 +36,7 @@ class RedisDB:
         return hash, salt
 
     async def register(self, username: str, password: str, fullname: str):
-        with await self.pool as redis:
+        with await (await self.pool) as redis:
             if await redis.exists(username):
                 raise UserExistsError
             hash, salt = self.get_hash(password)
@@ -47,9 +48,10 @@ class RedisDB:
             await redis.hmset_dict(username, data)
 
     async def auth(self, username: str, password: str) -> str:
-        with await self.pool as redis:
+        with await (await self.pool) as redis:
             hash, salt = await redis.hmget(username, "hash", "salt")
-            if not self.get_hash(password, salt) == hash:
+            new_hash, _ = self.get_hash(password, salt)
+            if not new_hash == hash:
                 raise PasswordError
 
             token = self._generate_token()
@@ -58,5 +60,7 @@ class RedisDB:
         return token
 
     def _generate_token(self) -> str:
-        pass
+        return standard_b64encode(os.urandom(32))
+
+
 
