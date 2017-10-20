@@ -46,7 +46,7 @@
 {
 "code": 0, 
 "note": Success", 
-"token": "asda12321321dq1221"
+"token": "azanU74scg89ROpYVAGxDRLXDnc5Wxj7hHZRroRp34U="
 }
 ```
 ### WebSocket
@@ -56,7 +56,7 @@
 ```
 {
 "action": "login"
-"token" : "asda12321321dq1221",
+"token" : "azanU74scg89ROpYVAGxDRLXDnc5Wxj7hHZRroRp34U=",
  }
 ```
 * Response: 

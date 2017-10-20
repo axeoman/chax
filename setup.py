@@ -9,6 +9,11 @@ setup(
     install_requires=[
 
     ],
-    keywords="chax chat",
-    packages=find_packages(exclude=["tests"])
+    keywords="chax",
+    packages=find_packages(exclude=["tests"]),
+    entry_points={
+                       'console_scripts': [
+                           'chax=chax:main',
+                       ]
+                   }
 )
