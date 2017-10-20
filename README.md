@@ -15,65 +15,93 @@
 
 # API
 
+### REST
 #### Регистрация
 
-* Request: 
+* POST /register/: 
 ```
-HTTP POST
-{"username" : "axeoman",
+{
+"username" : "axeoman",
 "password" : "123j1kh21",
-"Full Name": "Atavin Alexey"}
+"Full Name": "Atavin Alexey"
+}
 ```
-* Response:  
+* 200 OK
 ```
-{"code": 0, "note": Success"}
+{
+"code": 0, 
+"note": Success"
+}
 ```
 #### Авторизация
-* Request:  
+* POST /auth/  
 ```
-HTTP POST
-{"username" : "axeoman",
+{
+"username" : "axeoman",
 "password" : "123j1kh21",
+}
 ```
-* Response:  
+* 200 OK 
 ```
-{"code": 0, "note": Success", 
-"token": "asda12321321dq1221"}
+{
+"code": 0, 
+"note": Success", 
+"token": "asda12321321dq1221"
+}
 ```
+### WebSocket
 #### Подключение
 
 * Request:  
 ```
-{"token" : "asda12321321dq1221",
- "action": "login"}
+{
+"action": "login"
+"token" : "asda12321321dq1221",
+ }
 ```
 * Response: 
 ```
-{"code": 0, "note": "Success"}
+{
+"code": 0, 
+"note": "Success"
+}
  ```
 #### Список пользователей
 
 * Request:  
 ```
-{"action": "get_user_list"}
+{
+"action": "get_user_list"
+}
 ```
 * Response: 
  ```
-{"users": []}
+{
+"users": []
+}
 ```
 #### Отправка сообщения
 
 * Request:  
 ```
-{"action": "broadcast",
-"message": "Привет Всем!"}  
+{
+"action": "broadcast",
+"message": "Привет Всем!"
+}  
 ```
+or
 ```
-{"action": "unicast",
-"message": "Привет Андрей!"}
+{
+"action": "unicast",
+"user" : "Andrey777",
+"message": "Привет Андрей!"
+}
 ```
 
 * Response:  
 ```
-{"code": 0, "note": "Success"}
+{
+"code": 0, 
+"note": "Success"
+}
 ```
