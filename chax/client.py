@@ -62,7 +62,7 @@ class API:
                 if data["action"] == "login":
                     self._login(ws, data['username'], data['token'])
                     logged_user = data["username"]
-                    request['active_users'][logged_user] = ws
+                    request.app['active_users'][logged_user] = ws
                 elif logged_user:
                     if data["action"] == "get_user_list":
                         self._get_user_list(ws)

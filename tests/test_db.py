@@ -57,3 +57,4 @@ async def test_double_registration(event_loop, db):
 async def test_user_not_found(event_loop, db):
     with pytest.raises(UserNotFoundError):
          await db.auth("WrongName", "WrongPassword")
+

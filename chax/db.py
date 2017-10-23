@@ -89,13 +89,13 @@ class RedisDB:
         with await (await self.pool) as redis:
             await redis.publish_json("chat", data)
 
-    async def subscribe(self, app):
+    async def subscribe(self, message_queue: asyncio.Queue):
         with await (await self.pool) as redis:
             try:
                 ch, *_ = await redis.subscribe('chat')
                 async for msg in ch.iter(encoding='utf-8'):
                     data = json.loads(msg)
-                    self.logger.error(data)
+                    await message_queue.put(data)
 
             except asyncio.CancelledError():
                 pass
