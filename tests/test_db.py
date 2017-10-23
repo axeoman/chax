@@ -2,7 +2,7 @@ import pytest
 import redis
 from chax.db import *
 import pytest_asyncio
-
+from chax import config
 
 NAME = "axeo"
 PASSWORD = "12345678"
@@ -22,26 +22,26 @@ def redis_env():
 
 @pytest.fixture
 def db():
-    return RedisDB()
+    return RedisDB(config)
 
 
 @pytest.fixture
 def red():
-    return redis.StrictRedis()
+    return redis.StrictRedis(decode_responses=True)
 
 
 async def test_register(event_loop, db, red):
 
     await db.register(NAME, PASSWORD, FULLNAME)
     data = red.hgetall(NAME)
-    assert data[b'fullname'] == FULLNAME.encode()
+    assert data['fullname'] == FULLNAME
 
 async def test_auth(event_loop, db, red):
 
     await db.register(NAME, PASSWORD, FULLNAME)
     token = await db.auth(NAME, PASSWORD)
     data = red.hgetall(NAME)
-    assert token == data[b'token']
+    assert token.decode() == data['token']
 
 async def test_wrong_pass(event_loop, db):
     await db.register(NAME, PASSWORD, FULLNAME)
