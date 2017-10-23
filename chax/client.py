@@ -5,6 +5,7 @@ import asyncio
 import logging
 import traceback
 
+
 class API:
 
     def __init__(self, db: db.RedisDB):
@@ -61,13 +62,14 @@ class API:
                 if data["action"] == "login":
                     self._login(ws, data['username'], data['token'])
                     logged_user = data["username"]
+                    request['active_users'][logged_user] = ws
                 elif logged_user:
                     if data["action"] == "get_user_list":
                         self._get_user_list(ws)
                     elif data["action"] == "broadcast":
-                        self._send_broadcast(ws, data["message"])
+                        self._send_message(ws, logged_user, data["message"])
                     elif data["action"] == "unicast":
-                        self._send_unicast(ws, logged_user, data["user"], data["message"])
+                        self._send_message(ws, logged_user, data["user"], data["message"])
                 else:
                     await ws.send_json({"code": 3,
                                         "note": "User not logged in!"})
@@ -99,13 +101,10 @@ class API:
     async def _get_user_list(self, ws):
         await ws.send_json({"users": await self.db.get_user_list()})
 
-    async def _send_broadcast(self, ws, message):
-        await self.db.broadcast(message)
+    async def _send_message(self, ws, sender, message, reciever=None):
+        await self.db.send_message(sender, reciever, message)
         await ws.send_json({"code": 0,
                             "note": "Success"})
 
-    async def _send_unicast(self, ws, sender, reciever, message):
-        await self.db.unicast(sender, reciever, message)
-        await ws.send_json({"code": 0,
-                            "note": "Success"})
+
 

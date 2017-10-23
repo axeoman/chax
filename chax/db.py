@@ -1,10 +1,10 @@
-import aioodbc
 import asyncio
 import aioredis
 import hashlib
 import os
 from base64 import standard_b64encode
-
+import logging
+import json
 
 class UserNotFoundError(Exception):
     pass
@@ -28,6 +28,7 @@ class RedisDB:
         self.host = host
         self.port = port
         self._pool = None
+        self.logger = logging.getLogger(self.__class__.__name__)
 
     @property
     async def pool(self):
@@ -81,12 +82,21 @@ class RedisDB:
         with await (await self.pool) as redis:
             return await redis.smembers("chatroom", encoding="utf-8")
 
-    async def broadcast(self, message):
+    async def send_message(self, sender, reciever, message):
+        data = {"sender": sender,
+                "reciever": reciever,
+                "message": message}
         with await (await self.pool) as redis:
-            await redis.publish("chat", message)
+            await redis.publish_json("chat", data)
 
-    async def unicast(self, sender, reciever, message):
+    async def subscribe(self, app):
         with await (await self.pool) as redis:
-            await redis.publish(reciever, f"{sender}: {message}")
+            try:
+                ch, *_ = await redis.subscribe('chat')
+                async for msg in ch.iter(encoding='utf-8'):
+                    data = json.loads(msg)
+                    self.logger.error(data)
 
+            except asyncio.CancelledError():
+                pass
 
