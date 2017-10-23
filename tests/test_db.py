@@ -58,3 +58,6 @@ async def test_user_not_found(event_loop, db):
     with pytest.raises(UserNotFoundError):
          await db.auth("WrongName", "WrongPassword")
 
+
+
+

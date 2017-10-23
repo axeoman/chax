@@ -13,6 +13,9 @@ class API:
         self.logger = logging.getLogger(self.__class__.__name__)
 
     async def register(self, request: web.Request) -> web.Response:
+        """
+        Обработчик клиенстских запросов на регистрацию.
+        """
         data = await request.json()
         try:
             username = data["username"]
@@ -30,6 +33,9 @@ class API:
         return web.json_response(response)
 
     async def auth(self, request: web.Request) -> web.Response:
+        """
+        Обработчик клиентских запросов на авторизацию
+        """
         data = await request.json()
         try:
             username = data["username"]
@@ -52,7 +58,11 @@ class API:
 
         return web.json_response(response)
 
-    async def ws_handler(self, request):
+    async def ws_handler(self, request: web.Request) -> web.WebSocketResponse:
+        """
+        Обработчик всех соединений по Web Socket. Подразумевается авторизация абонента по токену
+        в первом сообщении.
+        """
         ws = web.WebSocketResponse()
         await ws.prepare(request)
         logged_user = None
@@ -82,7 +92,10 @@ class API:
             await ws.close()
             return ws
 
-    async def _login(self, ws, username, token):
+    async def _login(self, ws: web.WebSocketResponse, username: str, token: str):
+        """
+        Функция авторизации пользователя с валидацией его токена.
+        """
         try:
             await self.db.check_token(username, token)
         except db.TokenValidateError:
@@ -98,10 +111,17 @@ class API:
             await ws.send_json({"code": 2,
                                 "note": "Failed to login"})
 
-    async def _get_user_list(self, ws):
+    async def _get_user_list(self, ws: web.WebSocketResponse):
+        """
+        Получение списка активных пользователей.
+        """
         await ws.send_json({"users": await self.db.get_user_list()})
 
-    async def _send_message(self, ws, sender, message, reciever=None):
+    async def _send_message(self, ws: web.WebSocketResponse, sender: str, message: str,
+                            reciever: str =None):
+        """
+        Отправка сообщений конкретному пользователю или широковещательно.
+        """
         await self.db.send_message(sender, reciever, message)
         await ws.send_json({"code": 0,
                             "note": "Success"})
