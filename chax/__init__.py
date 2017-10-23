@@ -1,7 +1,9 @@
 import argparse
-import sys
+
 from aiohttp import web
+
 from chax import client
+from chax import config
 from chax import db
 from chax import tasks
 
@@ -12,15 +14,16 @@ __author__ = "Atavin Alexey"
 def main():
 
     parser = argparse.ArgumentParser(description='Simple Web Chat')
-    parser.add_argument('host', type=str, default='0.0.0.0', help='IPv4 address')
-    parser.add_argument('port', type=int, default=8888, help='port')
+    parser.add_argument('host', type=str, default=config.WEB_HOST, help='IPv4 address')
+    parser.add_argument('port', type=int, default=config.WEB_PORT, help='port')
 
     args = parser.parse_args()
 
     app = web.Application()
-    database = db.RedisDB(host='0.0.0.0')
-    api = client.API(db=database)
+    database = db.RedisDB(host=config.REDIS_HOST, port=config.REDIS_PORT, config=config)
+    api = client.API(db=database, config=config)
     app['api'] = api
+    app['config'] = config
     app.on_startup.append(tasks.start_tasks)
     app.on_cleanup.append(tasks.cleanup_tasks)
     app.router.add_post("/register/", api.register)

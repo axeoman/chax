@@ -1,16 +1,18 @@
-from aiohttp import web
-from . import db
-import json
 import asyncio
+import json
 import logging
 import traceback
 
+from aiohttp import web
+
+from . import db
+
 
 class API:
-
-    def __init__(self, db: db.RedisDB):
+    def __init__(self, db: db.RedisDB, config):
         self.db = db
         self.logger = logging.getLogger(self.__class__.__name__)
+        self.config = config
 
     async def register(self, request: web.Request) -> web.Response:
         """

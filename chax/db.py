@@ -1,10 +1,12 @@
 import asyncio
-import aioredis
 import hashlib
+import json
+import logging
 import os
 from base64 import standard_b64encode
-import logging
-import json
+
+import aioredis
+
 
 class UserNotFoundError(Exception):
     pass
@@ -23,12 +25,12 @@ class TokenValidateError(Exception):
 
 
 class RedisDB:
-
-    def __init__(self, host="0.0.0.0", port=6379):
+    def __init__(self, config, host="0.0.0.0", port=6379):
         self.host = host
         self.port = port
         self._pool = None
         self.logger = logging.getLogger(self.__class__.__name__)
+        self.config = config
 
     @property
     async def pool(self):
@@ -117,13 +119,12 @@ class RedisDB:
         Функция осуществляет загрузку всех пришедших сообщения в канале Redis и отправляет для
         обработки в очередь сообщений.
         """
-        with await (await self.pool) as redis:
-            try:
+        try:
+            with await (await self.pool) as redis:
                 ch, *_ = await redis.subscribe('chat')
                 async for msg in ch.iter(encoding='utf-8'):
                     data = json.loads(msg)
                     await message_queue.put(data)
 
-            except asyncio.CancelledError():
-                pass
-
+        except asyncio.CancelledError:
+            pass

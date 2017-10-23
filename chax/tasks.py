@@ -1,4 +1,3 @@
-from . import db
 import asyncio
 import logging
 
@@ -26,18 +25,18 @@ async def message_handler(app, queue):
                 except KeyError:
                     pass
 
-    except asyncio.CancelledError():
+    except asyncio.CancelledError:
         pass
 
 async def start_tasks(app):
     queue = app['message_queue'] = asyncio.Queue()
     app['chat_reader'] = app.loop.create_task(app['api'].db.subscribe(queue))
     app['message_handlers'] = list()
-    for _ in range(5):
+    for _ in range(app['config'].MESSAGE_HANDLERS):
         app['message_handlers'].append(app.loop.create_task(message_handler(app, queue)))
 
 
 async def cleanup_tasks(app):
-    for handler in app['message_handler']:
+    for handler in app['message_handlers']:
         handler.cancel()
-
+    app['chat_reader'].cancel()
