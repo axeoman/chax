@@ -18,6 +18,10 @@ class UserExistsError(Exception):
     pass
 
 
+class TokenValidateError(Exception):
+    pass
+
+
 class RedisDB:
 
     def __init__(self, host="0.0.0.0", port=6379):
@@ -63,5 +67,26 @@ class RedisDB:
     def _generate_token(self) -> str:
         return standard_b64encode(os.urandom(32))
 
+    async def check_token(self, username, token):
+        with await (await self.pool) as redis:
+            db_token = await redis.hget(username, "token")
+            if token != db_token:
+                raise TokenValidateError
+
+    async def add_to_chat(self, username):
+        with await (await self.pool) as redis:
+            await redis.sadd("chatroom", username)
+
+    async def get_user_list(self) -> list:
+        with await (await self.pool) as redis:
+            return await redis.smembers("chatroom", encoding="utf-8")
+
+    async def broadcast(self, message):
+        with await (await self.pool) as redis:
+            await redis.publish("chat", message)
+
+    async def unicast(self, sender, reciever, message):
+        with await (await self.pool) as redis:
+            await redis.publish(reciever, f"{sender}: {message}")
 
 
