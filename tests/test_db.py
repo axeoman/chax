@@ -1,33 +1,12 @@
 import pytest
-import redis
+
 from chax.db import *
-import pytest_asyncio
-from chax import config
 
 NAME = "axeo"
 PASSWORD = "12345678"
 FULLNAME = "Atavin Alexey"
 
 pytestmark = pytest.mark.asyncio
-
-
-@pytest.yield_fixture(scope='function', autouse=True)
-def redis_env():
-    r = redis.StrictRedis()
-
-    yield
-
-    r.flushall()
-
-
-@pytest.fixture
-def db():
-    return RedisDB(config)
-
-
-@pytest.fixture
-def red():
-    return redis.StrictRedis(decode_responses=True)
 
 
 async def test_register(event_loop, db, red):

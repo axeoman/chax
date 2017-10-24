@@ -3,7 +3,7 @@ import hashlib
 import json
 import logging
 import os
-from base64 import standard_b64encode
+from base64 import urlsafe_b64encode
 
 import aioredis
 
@@ -25,17 +25,18 @@ class TokenValidateError(Exception):
 
 
 class RedisDB:
-    def __init__(self, config, host="0.0.0.0", port=6379):
+    def __init__(self, config, host="0.0.0.0", port=6379, loop=None):
         self.host = host
         self.port = port
         self._pool = None
         self.logger = logging.getLogger(self.__class__.__name__)
         self.config = config
+        self.loop = loop
 
     @property
     async def pool(self):
         if not self._pool:
-            self._pool = await aioredis.create_pool((self.host, self.port))
+            self._pool = await aioredis.create_pool((self.host, self.port), loop=self.loop)
         return self._pool
 
     @staticmethod
@@ -72,13 +73,13 @@ class RedisDB:
                 raise PasswordError
             token = self._generate_token()
             await redis.hmset(username, "token", token)
-        return token
+        return token.decode()
 
     def _generate_token(self) -> str:
         """
         Генерация токена для последующей авторизации в чате.
         """
-        return standard_b64encode(os.urandom(32))
+        return urlsafe_b64encode(os.urandom(32))
 
     async def check_token(self, username, token):
         """

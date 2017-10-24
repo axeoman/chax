@@ -55,7 +55,7 @@ class API:
                                       "note": "Password is incorrect"})
 
         response = {"code": 0,
-                    "note": "Succcess",
+                    "note": "Success",
                     "token": token}
 
         return web.json_response(response)
