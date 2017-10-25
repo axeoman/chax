@@ -32,7 +32,7 @@ async def message_handler(app, queue):
 async def start_tasks(app):
     app['message_queue'] = asyncio.Queue()
     app['active_users'] = dict()
-    app['chat_reader'] = app.loop.create_task(app['api'].db.subscribe(app['message_queue']))
+    app['chat_reader'] = app.loop.create_task(app['api'].dao.subscribe(app['message_queue']))
     app['message_handlers'] = list()
     for _ in range(app['config'].MESSAGE_HANDLERS):
         app['message_handlers'].append(

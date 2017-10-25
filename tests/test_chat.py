@@ -22,8 +22,7 @@ import chax
 
 @pytest.yield_fixture(scope='function', autouse=True)
 def server():
-
-    process = Process(target=chax.main, args=("0.0.0.0", 8888))
+    process = Process(target=chax.server, args=("0.0.0.0", 8888))
     process.start()
     yield
 

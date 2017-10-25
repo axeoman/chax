@@ -1,3 +1,5 @@
+__version__ = "1.0.0"
+
 import argparse
 
 from aiohttp import web
@@ -8,11 +10,8 @@ from chax import db
 from chax import tasks
 from chax.dao import DAO
 
-__version__ = "1.0.0"
-__author__ = "Atavin Alexey"
 
-
-def main(host, port, loop=None):
+def server(host, port, loop=None):
     app = web.Application(loop=loop)
     database = db.RedisDB(host=config.REDIS_HOST, port=config.REDIS_PORT, config=config)
     dao = DAO(db=database, config=config)  # FIXME: config лучше по-другому
@@ -28,10 +27,14 @@ def main(host, port, loop=None):
                 host=host,
                 port=int(port))
 
-if __name__ == "__main__":
+
+def main():
     parser = argparse.ArgumentParser(description='Simple Web Chat')
     parser.add_argument('host', type=str, default=config.WEB_HOST, help='IPv4 address')
     parser.add_argument('port', type=int, default=config.WEB_PORT, help='port')
     args = parser.parse_args()
+    print(args)
+    server(args.host, args.port)
 
-    main(args.host, args.port)
+if __name__ == "__main__":
+    main()

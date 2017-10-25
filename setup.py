@@ -1,12 +1,22 @@
+import os
+import re
+import site
+
 from setuptools import setup, find_packages
 
-from chax import __version__, __author__
+with open(os.path.join(os.path.abspath(os.path.dirname(__file__)), 'chax', '__init__.py'),
+          'r') as init_file:
+    try:
+        version = \
+        re.findall(r"^__version__ ?= ?['\"]([^'\"]+)['\"]$", init_file.read(), re.MULTILINE)[0]
+    except IndexError:
+        raise RuntimeError('Unable to determine version.')
 
 setup(
     name="chax",
-    version=__version__,
+    version=version,
     url="https://github.com/axeoman/chax",
-    author=__author__,
+    author="Atavin Alexey",
     install_requires=[
         "aiohttp",
         "pyyaml",
@@ -20,4 +30,5 @@ setup(
                        ]
     },
     python_requires=">=3.6",
+    data_files=[(f"{site.getsitepackages()[0]}/chax", ["chax/defaults.yaml"])],
 )
