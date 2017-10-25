@@ -22,6 +22,7 @@ import chax
 
 @pytest.yield_fixture(scope='function', autouse=True)
 def server():
+
     process = Process(target=chax.main, args=("0.0.0.0", 8888))
     process.start()
     yield
@@ -47,11 +48,12 @@ reg_data_three = {
     "fullName": "Vasiliy Three Pupkin",
 }
 
+
 HTTP_SOCKET = "http://0.0.0.0:8888"
 WS = "ws://127.0.0.1:8888/ws/"
 
-
 async def register_and_auth(data, red):
+
     async with ClientSession() as session:
         async with session.post(f'{HTTP_SOCKET}/register/', data=json.dumps(data)) as resp:
             assert resp.status == 200
@@ -68,7 +70,6 @@ async def register_and_auth(data, red):
     redis_data = red.hgetall(data["username"])
     assert redis_data['token'] == response_data['token']
     return response_data['token']
-
 
 async def one(token):
     logger = logging.getLogger("One")

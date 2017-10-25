@@ -1,12 +1,13 @@
 import pytest
 
-from chax.db import *
-
 NAME = "axeo"
 PASSWORD = "12345678"
 FULLNAME = "Atavin Alexey"
 
 pytestmark = pytest.mark.asyncio
+
+
+# Эти тесты следуюет запускать с параметром -p no:aiohttp"
 
 
 async def test_register(event_loop, db, red):
@@ -20,7 +21,7 @@ async def test_auth(event_loop, db, red):
     await db.register(NAME, PASSWORD, FULLNAME)
     token = await db.auth(NAME, PASSWORD)
     data = red.hgetall(NAME)
-    assert token.decode() == data['token']
+    assert token == data['token']
 
 async def test_wrong_pass(event_loop, db):
     await db.register(NAME, PASSWORD, FULLNAME)

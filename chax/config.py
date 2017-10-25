@@ -26,6 +26,8 @@ logging.basicConfig(level=LOGGING_CONFIG['level'],
 
 REDIS_HOST = CONF['redis']['host']
 REDIS_PORT = CONF['redis']['port']
+REDIS_CHANNEL = CONF['redis']['channel']
+REDIS_MEMBERS_KEY = CONF['redis']['members_key']
 WEB_HOST = CONF['web']['host']
 WEB_PORT = CONF['web']['port']
 MESSAGE_HANDLERS = CONF['internal']['message_handlers']

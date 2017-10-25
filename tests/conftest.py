@@ -5,6 +5,7 @@ import redis
 
 from chax import config
 from chax.client import API
+from chax.dao import DAO
 from chax.db import RedisDB
 
 
@@ -19,7 +20,8 @@ def redis_env():
 
 @pytest.fixture
 def api():
-    api = API(db=RedisDB(config), config=config)
+    dao = DAO(db=RedisDB(config), config=config)
+    api = API(db=RedisDB(config), config=config, dao=dao)
     return api
 
 

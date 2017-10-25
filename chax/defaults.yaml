@@ -5,6 +5,9 @@ logging:
 redis:
   host: 0.0.0.0
   port: 6379
+  channel: chat
+  members_key: chatroom
+
 
 web:
   host: 0.0.0.0

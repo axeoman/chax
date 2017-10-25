@@ -1,27 +1,8 @@
 import asyncio
-import hashlib
 import json
 import logging
-import os
-from base64 import urlsafe_b64encode
 
 import aioredis
-
-
-class UserNotFoundError(Exception):
-    pass
-
-
-class PasswordError(Exception):
-    pass
-
-
-class UserExistsError(Exception):
-    pass
-
-
-class TokenValidateError(Exception):
-    pass
 
 
 class RedisDB:
@@ -39,95 +20,55 @@ class RedisDB:
             self._pool = await aioredis.create_pool((self.host, self.port), loop=self.loop)
         return self._pool
 
-    @staticmethod
-    def get_hash(password, salt=os.urandom(32)):
-        hash = hashlib.pbkdf2_hmac('sha256', password.encode(), salt, 100)
-        return hash, salt
-
-    async def register(self, username: str, password: str, fullname: str):
-        """
-        Регистрация пользователя подрузамевает сохранение его личной информации в том числе
-        логина и пароля в базу Redis.
-        """
+    async def check_exists(self, username):
         with await (await self.pool) as redis:
-            if await redis.exists(username):
-                raise UserExistsError
-            hash, salt = self.get_hash(password)
-            data = {"hash": hash,
-                    "salt": salt,
-                    "fullname": fullname,
-                    "token": ""}
+            return await redis.exists(username)
 
+    async def add_user_data(self, username, data):
+        with await (await self.pool) as redis:
             await redis.hmset_dict(username, data)
 
-    async def auth(self, username: str, password: str) -> str:
-        """
-        Аунтификация пользователя по данным в Redis.
-        """
+    async def get_user_data(self, username):
         with await (await self.pool) as redis:
-            hash, salt = await redis.hmget(username, "hash", "salt")
-            if not hash:
-                raise UserNotFoundError
-            new_hash, _ = self.get_hash(password, salt)
-            if not new_hash == hash:
-                raise PasswordError
-            token = self._generate_token()
-            await redis.hmset(username, "token", token)
-        return token.decode()
+            return await redis.hgetall(username)
 
-    def _generate_token(self) -> str:
-        """
-        Генерация токена для последующей авторизации в чате.
-        """
-        return urlsafe_b64encode(os.urandom(32))
-
-    async def check_token(self, username, token):
-        """
-        Проверка валидности токена.
-        """
+    async def save_token(self, username, token):
         with await (await self.pool) as redis:
-            db_token = (await redis.hget(username, "token")).decode()
-            if token != db_token:
-                self.logger.error(f"TokenError! {db_token} != {token}")
-                raise TokenValidateError
+            return await redis.hset(username, "token", token)
 
-    async def add_to_chat(self, username: str):
+    async def get_token(self, username):
+        with await (await self.pool) as redis:
+            return (await redis.hget(username, "token")).decode()
+
+    async def add_member(self, username: str, set_key: str):
         """
         Добавления пользователя в чат.
         """
         with await (await self.pool) as redis:
-            await redis.sadd("chatroom", username)
+            await redis.sadd(set_key, username)
 
-    async def get_user_list(self) -> list:
+    async def get_members(self, set_key: str) -> list:
         """
         Функция возвращает список всех активных пользователей в чате.
         """
         with await (await self.pool) as redis:
-            return await redis.smembers("chatroom", encoding="utf-8")
+            return await redis.smembers(set_key, encoding="utf-8")
 
-    async def send_message(self, sender: str, reciever: str, message: str):
+    async def publish_message(self, channel, data):
         """
-        Отправка сообщения в чат. Одна и та же функция обслуживает широковещательные и личные
-        сообщения.
+        Публикация сообщения в канал Redis.
         """
-        data = {"sender": sender,
-                "reciever": reciever,
-                "message": message}
         with await (await self.pool) as redis:
-            await redis.publish_json("chat", data)
+            await redis.publish_json(channel, data)
 
     async def subscribe(self, message_queue: asyncio.Queue):
         """
         Функция осуществляет загрузку всех пришедших сообщения в канале Redis и отправляет для
         обработки в очередь сообщений.
         """
-        try:
-            with await (await self.pool) as redis:
-                ch, *_ = await redis.subscribe('chat')
-                async for msg in ch.iter(encoding='utf-8'):
-                    data = json.loads(msg)
-                    self.logger.debug(msg)
-                    await message_queue.put(data)
-
-        except asyncio.CancelledError:
-            pass
+        with await (await self.pool) as redis:
+            ch, *_ = await redis.subscribe('chat')
+            async for msg in ch.iter(encoding='utf-8'):
+                data = json.loads(msg)
+                self.logger.debug(msg)
+                await message_queue.put(data)

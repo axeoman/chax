@@ -6,6 +6,7 @@ from chax import client
 from chax import config
 from chax import db
 from chax import tasks
+from chax.dao import DAO
 
 __version__ = "1.0.0"
 __author__ = "Atavin Alexey"
@@ -14,7 +15,8 @@ __author__ = "Atavin Alexey"
 def main(host, port, loop=None):
     app = web.Application(loop=loop)
     database = db.RedisDB(host=config.REDIS_HOST, port=config.REDIS_PORT, config=config)
-    api = client.API(db=database, config=config)
+    dao = DAO(db=database, config=config)  # FIXME: config лучше по-другому
+    api = client.API(db=database, dao=dao, config=config)
     app['api'] = api
     app['config'] = config
     app.on_startup.append(tasks.start_tasks)
