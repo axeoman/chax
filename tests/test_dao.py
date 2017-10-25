@@ -13,12 +13,14 @@ pytestmark = pytest.mark.asyncio
 
 
 async def test_register(event_loop, dao, red):
+    await dao.db.create_pool()
     await dao.register(NAME, PASSWORD, FULLNAME)
     data = red.hgetall(NAME)
     assert data['fullname'] == FULLNAME
 
 
 async def test_auth(event_loop, dao, red):
+    await dao.db.create_pool()
     await dao.register(NAME, PASSWORD, FULLNAME)
     token = await dao.auth(NAME, PASSWORD)
     data = red.hgetall(NAME)
@@ -26,17 +28,20 @@ async def test_auth(event_loop, dao, red):
 
 
 async def test_wrong_pass(event_loop, dao):
+    await dao.db.create_pool()
     await dao.register(NAME, PASSWORD, FULLNAME)
     with pytest.raises(PasswordError):
         await dao.auth(NAME, "WrongPassword")
 
 
 async def test_double_registration(event_loop, dao):
+    await dao.db.create_pool()
     await dao.register(NAME, PASSWORD, FULLNAME)
     with pytest.raises(UserExistsError):
         await dao.register(NAME, PASSWORD, FULLNAME)
 
 
 async def test_user_not_found(event_loop, dao):
+    await dao.db.create_pool()
     with pytest.raises(UserNotFoundError):
         await dao.auth("WrongName", "WrongPassword")

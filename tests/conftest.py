@@ -34,5 +34,4 @@ def red():
 def dao():
     loop = asyncio.get_event_loop()
     db = RedisDB(config, loop=loop)
-    loop.run_until_complete(db.create_pool())
     return DAO(RedisDB(), config.REDIS_MEMBERS_KEY, config.REDIS_CHANNEL)
