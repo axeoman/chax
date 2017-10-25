@@ -55,8 +55,8 @@
 * Request:  
 ```
 {
-"action": "login"
-"username: "axeo",
+"action": "login",
+"username": "axeo",
 "token" : "azanU74scg89ROpYVAGxDRLXDnc5Wxj7hHZRroRp34U=",
  }
 ```

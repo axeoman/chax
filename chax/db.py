@@ -86,8 +86,9 @@ class RedisDB:
         Проверка валидности токена.
         """
         with await (await self.pool) as redis:
-            db_token = await redis.hget(username, "token")
+            db_token = (await redis.hget(username, "token")).decode()
             if token != db_token:
+                self.logger.error(f"TokenError! {db_token} != {token}")
                 raise TokenValidateError
 
     async def add_to_chat(self, username: str):
@@ -125,6 +126,7 @@ class RedisDB:
                 ch, *_ = await redis.subscribe('chat')
                 async for msg in ch.iter(encoding='utf-8'):
                     data = json.loads(msg)
+                    self.logger.debug(msg)
                     await message_queue.put(data)
 
         except asyncio.CancelledError:

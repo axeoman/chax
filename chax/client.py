@@ -71,17 +71,18 @@ class API:
         try:
             async for msg in ws:
                 data = json.loads(msg.data)
+                self.logger.debug(data)
                 if data["action"] == "login":
-                    self._login(ws, data['username'], data['token'])
+                    await self._login(ws, data['username'], data['token'])
                     logged_user = data["username"]
                     request.app['active_users'][logged_user] = ws
                 elif logged_user:
                     if data["action"] == "get_user_list":
-                        self._get_user_list(ws)
+                        await self._get_user_list(ws)
                     elif data["action"] == "broadcast":
-                        self._send_message(ws, logged_user, data["message"])
+                        await self._send_message(ws, logged_user, data["message"])
                     elif data["action"] == "unicast":
-                        self._send_message(ws, logged_user, data["user"], data["message"])
+                        await self._send_message(ws, logged_user, data["message"], data["user"])
                 else:
                     await ws.send_json({"code": 3,
                                         "note": "User not logged in!"})
@@ -89,7 +90,6 @@ class API:
 
         except asyncio.CancelledError:
             pass
-
         finally:
             await ws.close()
             return ws

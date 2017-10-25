@@ -1,8 +1,7 @@
 import asyncio
 import logging
 
-
-logger = logging.getLogger(__file__)
+logger = logging.getLogger("Tasks")
 
 async def message_handler(app, queue):
     """
@@ -18,6 +17,8 @@ async def message_handler(app, queue):
             if reciever is None:
                 tasks = [ws.send_json(msg) for username, ws in app['active_users'].items()]
                 results = await asyncio.gather(*tasks, return_exceptions=False)
+                for username, ws in app['active_users'].items():
+                    logger.debug(username)
             else:
                 try:
                     ws = app['active_users'][reciever]
@@ -29,11 +30,13 @@ async def message_handler(app, queue):
         pass
 
 async def start_tasks(app):
-    queue = app['message_queue'] = asyncio.Queue()
-    app['chat_reader'] = app.loop.create_task(app['api'].db.subscribe(queue))
+    app['message_queue'] = asyncio.Queue()
+    app['active_users'] = dict()
+    app['chat_reader'] = app.loop.create_task(app['api'].db.subscribe(app['message_queue']))
     app['message_handlers'] = list()
     for _ in range(app['config'].MESSAGE_HANDLERS):
-        app['message_handlers'].append(app.loop.create_task(message_handler(app, queue)))
+        app['message_handlers'].append(
+            app.loop.create_task(message_handler(app, app['message_queue'])))
 
 
 async def cleanup_tasks(app):
