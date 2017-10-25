@@ -5,12 +5,10 @@ import logging
 from aiohttp import web
 
 from . import dao
-from . import db
 
 
 class API:
-    def __init__(self, db: db.RedisDB, dao: dao.DAO, config):
-        self.db = db
+    def __init__(self, dao: dao.DAO, config):
         self.dao = dao
         self.logger = logging.getLogger(self.__class__.__name__)
         self.config = config

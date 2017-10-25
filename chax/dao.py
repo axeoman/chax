@@ -23,10 +23,11 @@ class PasswordError(Exception):
 
 
 class DAO:
-    def __init__(self, db: db.RedisDB, config):
+    def __init__(self, db: db.RedisDB, members_key, chat_channel):
         self.logger = logging.getLogger(self.__class__.__name__)
         self.db = db
-        self.config = config
+        self.members_key = members_key
+        self.chat_channel = chat_channel
 
     def get_hash(self, password, salt=os.urandom(32)):
         h = hashlib.pbkdf2_hmac('sha256', password.encode(), salt, 100)
@@ -78,7 +79,7 @@ class DAO:
         """
         try:
             if await self.check_token(username, token):
-                await self.db.add_member(username, self.config.REDIS_MEMBERS_KEY)
+                await self.db.add_member(username, self.members_key)
                 await ws.send_json({"code": 0,
                                     "note": "Success"})
             else:
@@ -102,7 +103,7 @@ class DAO:
         """
         Получение списка активных пользователей.
         """
-        await ws.send_json({"users": await self.db.get_members(self.config.REDIS_MEMBERS_KEY)})
+        await ws.send_json({"users": await self.db.get_members(self.members_key)})
 
     async def send_message(self, ws: web.WebSocketResponse, sender: str, message: str,
                            reciever: str = None):
@@ -112,12 +113,12 @@ class DAO:
         data = {"sender": sender,
                 "reciever": reciever,
                 "message": message}
-        await self.db.publish_message(self.config.REDIS_CHANNEL, data)
+        await self.db.publish_message(self.chat_channel, data)
         await ws.send_json({"code": 0,
                             "note": "Success"})
 
     async def subscribe(self, message_queue: asyncio.Queue):
         try:
-            await self.db.subscribe(message_queue, self.config.REDIS_CHANNEL)
+            await self.db.subscribe(message_queue, self.chat_channel)
         except asyncio.CancelledError:
             pass

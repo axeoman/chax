@@ -6,4 +6,7 @@ RUN pip install /chax
 
 EXPOSE 80
 
-CMD ["chax", "0.0.0.0", "80"]
+ENV REDISHOST 0.0.0.0
+ENV REDISPORT 6379
+
+CMD ["chax"]

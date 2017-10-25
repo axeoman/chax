@@ -17,6 +17,7 @@ async def register(api, loop, test_client, red):
     app = web.Application()
     app.router.add_post('/register/', api.register)
     app.router.add_post('/auth/', api.auth)
+    await api.dao.db.create_pool()
     client = await test_client(app)
     resp = await client.post('/register/', data=json.dumps(data))
     assert resp.status == 200

@@ -21,7 +21,7 @@ def redis_env():
 @pytest.fixture
 def api():
     dao = DAO(db=RedisDB(config), config=config)
-    api = API(db=RedisDB(config), config=config, dao=dao)
+    api = API(config=config, dao=dao)
     return api
 
 

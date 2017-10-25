@@ -1,5 +1,7 @@
 import asyncio
 import logging
+import sys
+import traceback
 
 logger = logging.getLogger("Tasks")
 
@@ -30,6 +32,13 @@ async def message_handler(app, queue):
         pass
 
 async def start_tasks(app):
+    try:
+        await app['database'].create_pool()
+    except Exception:
+        logger.critical(traceback.format_exc())
+        logger.critical(f"Cannot connect to Redis!")
+        sys.exit(1)
+
     app['message_queue'] = asyncio.Queue()
     app['active_users'] = dict()
     app['chat_reader'] = app.loop.create_task(app['api'].dao.subscribe(app['message_queue']))
