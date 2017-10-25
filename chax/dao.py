@@ -32,7 +32,8 @@ class DAO:
         h = hashlib.pbkdf2_hmac('sha256', password.encode(), salt, 100)
         return h, salt
 
-    def generate_token(self) -> str:
+    @staticmethod
+    def generate_token() -> str:
         """
         Генерация токена для последующей авторизации в чате.
         """

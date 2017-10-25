@@ -31,6 +31,7 @@ def red():
 
 
 @pytest.fixture
-def db():
+def dao():
     loop = asyncio.get_event_loop()
-    return RedisDB(config, loop=loop)
+    db = RedisDB(config, loop=loop)
+    return DAO(db=db, config=config)
