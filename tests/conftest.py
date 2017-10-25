@@ -20,7 +20,7 @@ def redis_env():
 
 @pytest.fixture
 def api():
-    dao = DAO(db=RedisDB(config), config=config)
+    dao = DAO(RedisDB(), config.REDIS_MEMBERS_KEY, config.REDIS_CHANNEL)
     api = API(config=config, dao=dao)
     return api
 
@@ -34,4 +34,5 @@ def red():
 def dao():
     loop = asyncio.get_event_loop()
     db = RedisDB(config, loop=loop)
-    return DAO(db=db, config=config)
+    loop.run_until_complete(db.create_pool())
+    return DAO(RedisDB(), config.REDIS_MEMBERS_KEY, config.REDIS_CHANNEL)

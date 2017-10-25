@@ -12,7 +12,10 @@
 конкретному пользователю.
 
 Приложение запаковать в docker контейнер.
+## Запуск
 
+```docker build -t chax .```
+```docker run -e "REDISHOST=192.168.52.44" -e "REDISPORT=6379" -p 4000:80 -ti chax ```
 # API
 
 ### REST
