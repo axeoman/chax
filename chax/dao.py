@@ -118,6 +118,6 @@ class DAO:
 
     async def subscribe(self, message_queue: asyncio.Queue):
         try:
-            await self.db.subscribe(message_queue)
+            await self.db.subscribe(message_queue, self.config.REDIS_CHANNEL)
         except asyncio.CancelledError:
             pass

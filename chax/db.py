@@ -61,13 +61,13 @@ class RedisDB:
         with await (await self.pool) as redis:
             await redis.publish_json(channel, data)
 
-    async def subscribe(self, message_queue: asyncio.Queue):
+    async def subscribe(self, message_queue: asyncio.Queue, channel: str):
         """
         Функция осуществляет загрузку всех пришедших сообщения в канале Redis и отправляет для
         обработки в очередь сообщений.
         """
         with await (await self.pool) as redis:
-            ch, *_ = await redis.subscribe('chat')
+            ch, *_ = await redis.subscribe(channel)
             async for msg in ch.iter(encoding='utf-8'):
                 data = json.loads(msg)
                 self.logger.debug(msg)
